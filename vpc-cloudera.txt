@@ -1,0 +1,130 @@
+Note: total there 8 hosts . but in company(cm run on edge host) hive gatway and all gateway should run on edge .    cm and edge should have network:(created vpc) and subnet: (created public subnet)  ( in class instance type t3.large) 
+ and security group: default security group. storage:100
+hive gate way remove checked from all hosts and  check on  edge host.  check hue and hue load banlencer  on edge host
+
+----- check mysql service on hosts start
+nc -vz 10.0.0.187 3306
+-----------------------------------------------
+----- check mysql service on hosts end
+do not touch to default security group.
+elastic ip  Network Border Group =us-east-1
+
+instance t2.xlarge  for cm node
+
+Default security group : vpc(created default sg)
+
+t3.large t3.xlarge nvmp
+
+------------------------------------------
+Allocate elsatic ip address
+name =prodvpc
+------------------------------
+need database for services hue  like , (cloudera manager) repor manager ,hms (hive) ,oozi 
+
+host : edge /hue         10.0.0.48 (remove hive gatway from all hosts) hues & huebalancer
+host : hms/oozie          10.0.1.72
+host :report manager  10.0.1.228
+
+
+--- vpc destroy start
+delete nat gateway
+delete vpc 
+release ip
+check all resources running
+--- vpc destroy  end
+3master(t3.xlarge) node and 3worker(t3.large) node should have network:(created vpc) and  subnet: (created private subnet)
+and security group: (created privatesubnet-security=default-security-id and internal-private-security-group-ciderrange).storage:100
+Install mysql server(sudo apt-get install mysql-server -y)  and also install JDBC driver (sudo apt-get install libmysql-java) on cm host. change msyql config on cm host . send keypem.pem and mysqlconfig.cnf  and change permission 600 of keypem.pem
+start mysql service when node restart autometically  use following command
+sudo update-rc.d mysql defaults
+use secure installation for mysql  on cm host. 
+./ REAMING 27 AUDIO FILE//
+
+
+
+install  libmysql-java  driver  on cm host.
+install  libmysql-java  driver  on hue host.
+install  libmysql-java  driver  on hms/oozi host.
+install  libmysql-java  driver  on  (cloudera manager)report manager host.
+
+connect to cm(where my sql server running).  then go to cd /etc/mysql//mysql.conf.d/
+and open file  sudo nano mysqld.cnf  then change  bind-address=(private-ip-of-cm) . in case of error bind-address=0.0.0.0
+then resart mysql service.
+
+nc -mysql 10.0.0.187   3306
+on any other host  nc -mysql 10.0.0.187 3306
+
+
+
+on web ui. 
+add  databasehostname=private-dns in   hive ,(cloudera manager)report manager, oozi,hue.
+
+check red line will be remove on cm web ui.
+Edge node setup.
+On edge host: gateway  of hive ,kakfa ,spark,impala and hdfs client,yarn client.
+on web ui  go to hdfs ->instances->add role instances -> gateway-> select edge host.
+on web ui  go to yarn->instances->add role instances ->gateway-> select edge host.
+
+
+Connect edge host : sudo nano /etc/passwd   
+user hdfs /bin/bash
+hdfs dfs -mkdir output
+hdfs dfs -ls 
+ru test job
+
+yarn jar /opt/cloudera/parcels/CDH/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar pi 10 100 
+
+Web ui. jumper node for web ui. jumper node is windows server is not part of cluster and not included in capacity planning.
+
+Step 1:  create vpc with  public and private subnet.
+        Step 1.a create  elastic ip
+         select public subnet click on action and  click on Edit subnet setting and  click on checkbox Enable auto-assign public IPv4 address
+	
+Step 2: Deploy cloudera on vpc.
+        Step 2.1 :  lanunch instance for cm . In step 3.configure instance   select Network=(created vpc) and subnet=(created public subnet) .In step 4 add storage 100 gib. auto asing public-ip.
+      
+	
+---- edge set up edge start 		
+cloudera manager , hue ,flume ,scoop,hive g ,  kafka g  , spartk g, impala g, hdfs client ,yarn client
+client configuration need  edge node setup.
+under hdfs
+instance
+add role instances
+click on gateway  select edge host
+
+click on yarn 
+instances 
+under instances 
+add role instances
+click on  gateway  select edge host
+
+restart statless services 
+
+---- edge set up edge emd	
+
+
+---- jamper windows  start
+win 2012 r2rtm
+---- jamper windows  end        	
+
+------------------ SECURITY GROUP ----------------------
+created vpc(default security group): 
+Type :All trafic  ,Custom : sg-05abdcc45852b8eda
+Type : All trafic, MyIp : 171.79.45.118/32
+Type: All trafic,Custom: 10.0.1.0/24
+add security group for private subnet 
+name: prative-subnet-sg
+SELECT USER CREATED VPC .
+Type: All trafice ,Custom:  sg-05abdcc45852b8eda
+Type: All trafice ,Custom: 10.0.1.0/24
+
+edge/cm : instance step 3: select user created vpc.
+edge/cm:select default security group of user created vpc.
+
+
+-----------------------trouble shotting ------------
+after mysql database created 
+restart mysql service 
+
+ 	
+  	
